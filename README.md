@@ -66,9 +66,12 @@ mdtopdf/
 
 ## Using This Template for Your Own Project
 
-### Option 1 — Docker (no local install)
+### Option 1 — Docker, default styling
 
-Mount your docs folder and run:
+Best for getting started quickly or for generating a PDF from an existing
+`docs/` folder without installing anything locally. Everything runs inside the
+container — no Pandoc, LaTeX, or template setup required on your machine. Works
+equally well for existing projects and new ones.
 
 ```bash
 docker run --rm \
@@ -81,9 +84,13 @@ docker run --rm \
   DOC_DATE="April 2026"
 ```
 
-### Option 2 — Custom styling
+### Option 2 — Docker, custom styling
 
-Extract the default `metadata.yaml`, edit it, then mount it back:
+Best when you need visual customization — different fonts, colors, title page
+layout, or margins — but still want to avoid a local Pandoc/LaTeX install. You
+extract the default `metadata.yaml`, edit it, and mount it back into the
+container. Like Option 1, this works for existing projects and new ones with no
+local installation required.
 
 ```bash
 # 1. Extract the default config
@@ -100,30 +107,67 @@ docker run --rm \
   DOCS_DIR=/docs DOC_ID=1234 DOC_MAJOR=1 DOC_MINOR=0
 ```
 
-### Option 3 — Clone and adapt
+### Option 3 — Copy files into your existing project
 
-Clone the repo to get the full setup: Makefile, filters, CI workflow, and
-sample docs.
+Best when you already have a project or repository with Markdown documentation
+and want to add local PDF generation to it — without Docker and without creating
+a separate repo. You copy four files from mdtopdf into your project and run
+`make` directly. Once copied, there is no further dependency on this repository.
+
+Requires [local installation](#running-locally-no-docker) of Pandoc, LaTeX, and
+the Eisvogel template.
+
+**Project layout after setup:**
+
+```text
+your-project/
+├── docs/                  ← your existing Markdown files (already here)
+├── filters/
+│   └── doc-type.lua       ← copy from mdtopdf
+└── pandoc/
+    ├── Makefile           ← copy from mdtopdf
+    ├── metadata.yaml      ← copy from mdtopdf
+    └── chapter-break.lua  ← copy from mdtopdf
+```
+
+The Makefile looks for docs at `../docs/` and the filter at `../filters/`
+relative to the `pandoc/` directory, so this layout is required for the
+defaults to work. If your docs live elsewhere, override `DOCS_DIR` at build
+time.
+
+Download the four files directly without cloning the full repo:
 
 ```bash
-git clone https://github.com/jcarranz97/mdtopdf.git
+mkdir -p your-project/pandoc your-project/filters
+
+BASE=https://raw.githubusercontent.com/jcarranz97/mdtopdf/main
+
+curl -o your-project/pandoc/Makefile           "$BASE/pandoc/Makefile"
+curl -o your-project/pandoc/metadata.yaml      "$BASE/pandoc/metadata.yaml"
+curl -o your-project/pandoc/chapter-break.lua  "$BASE/pandoc/chapter-break.lua"
+curl -o your-project/filters/doc-type.lua      "$BASE/filters/doc-type.lua"
+```
+
+Edit `pandoc/metadata.yaml` to set your document title, author, and visual
+settings, then run `make` from `pandoc/`. See [Build Commands](#build-commands)
+for the full list of targets.
+
+### Option 4 — Fork and adapt
+
+Best when you are starting documentation from scratch and do not have an
+existing repository to put it in. Fork this repo on GitHub and edit the files
+in `docs/` directly — the CI workflow, Makefile, filters, and sample content
+are all already in place.
+
+```bash
+# After forking on GitHub:
+git clone https://github.com/your-username/mdtopdf.git
 cd mdtopdf/pandoc/
 make
 ```
 
 > Before running `make`, complete the [local setup](#running-locally-no-docker)
 > to install Pandoc, LaTeX, and the Eisvogel template.
-
-Files to copy into your own project:
-
-| File | Purpose |
-|---|---|
-| `pandoc/metadata.yaml` | Fonts, colors, title page, layout |
-| `pandoc/Makefile` | Build targets |
-| `pandoc/chapter-break.lua` | Chapter page-break workaround for Eisvogel |
-| `filters/doc-type.lua` | Conditional content filter |
-
-Put your `.md` files in `docs/` and run `make`.
 
 ---
 
@@ -376,9 +420,11 @@ pandoc metadata.yaml ../docs/02-architecture.md \
 
 ## Running Locally (no Docker)
 
-If you prefer not to use the Docker image, install the required tools directly
-on your system and copy a small set of files into your own project. Once those
-files are in place you have no further dependency on this repository.
+Install the required tools on your system, then follow
+[Option 3](#option-3--copy-files-into-your-existing-project) to copy the
+necessary files into your project. Once the tools are installed and the files
+are in place you can run `make` directly from your project's `pandoc/`
+directory.
 
 ### Installation
 
@@ -422,42 +468,6 @@ ls ~/.local/share/pandoc/templates/
 ```
 
 > **Version note:** the 2.4.2 release tag has no `v` prefix.
-
-### Project Setup
-
-Copy four files from this repo into your project. The expected layout is:
-
-```text
-your-project/
-├── docs/                  ← your existing Markdown files (already here)
-├── filters/
-│   └── doc-type.lua       ← copy from mdtopdf
-└── pandoc/
-    ├── Makefile           ← copy from mdtopdf
-    ├── metadata.yaml      ← copy from mdtopdf
-    └── chapter-break.lua  ← copy from mdtopdf
-```
-
-The Makefile looks for docs at `../docs/` and the filter at `../filters/` relative
-to the `pandoc/` directory, so this layout is required for the defaults to work.
-If your docs live elsewhere, override `DOCS_DIR` at build time (see
-[Build Commands](#build-commands) below).
-
-Download the files directly without cloning the full repo:
-
-```bash
-mkdir -p your-project/pandoc your-project/filters
-
-BASE=https://raw.githubusercontent.com/jcarranz97/mdtopdf/main
-
-curl -o your-project/pandoc/Makefile           "$BASE/pandoc/Makefile"
-curl -o your-project/pandoc/metadata.yaml      "$BASE/pandoc/metadata.yaml"
-curl -o your-project/pandoc/chapter-break.lua  "$BASE/pandoc/chapter-break.lua"
-curl -o your-project/filters/doc-type.lua      "$BASE/filters/doc-type.lua"
-```
-
-Edit `pandoc/metadata.yaml` to set your document title, author, and visual
-settings before the first build.
 
 ### Build Commands
 
