@@ -1,0 +1,108 @@
+name: Generate PDFs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  # ── Pandoc + Eisvogel ────────────────────────────────────────────────────────
+  pandoc-pdf:
+    name: Pandoc PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LaTeX, fonts, and Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-latex-extra \
+            texlive-plain-generic \
+            fonts-dejavu
+
+      - name: Install Eisvogel template
+        run: |
+          mkdir -p ~/.local/share/pandoc/templates
+          curl -sLO https://github.com/Wandmalfarbe/pandoc-latex-template/releases/latest/download/Eisvogel.tar.gz
+          tar -xzf Eisvogel.tar.gz
+          cp eisvogel.latex ~/.local/share/pandoc/templates/
+
+      - name: Build PDF
+        working-directory: pandoc
+        run: make
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: pandoc-pdf
+          path: pandoc/output/*.pdf
+
+  # ── Quarto ───────────────────────────────────────────────────────────────────
+  quarto-pdf:
+    name: Quarto PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install LaTeX and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-latex-extra \
+            texlive-plain-generic \
+            fonts-dejavu
+
+      - name: Build PDF
+        working-directory: quarto
+        run: make pdf
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: quarto-pdf
+          path: quarto/_build/**/*.pdf
+
+  # ── Sphinx + MyST ─────────────────────────────────────────────────────────────
+  sphinx-pdf:
+    name: Sphinx PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        working-directory: sphinx
+        run: pip install -r requirements.txt
+
+      - name: Install LaTeX and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            texlive-xetex \
+            texlive-fonts-recommended \
+            texlive-latex-extra \
+            texlive-plain-generic \
+            fonts-dejavu \
+            latexmk
+
+      - name: Build PDF
+        working-directory: sphinx
+        run: make pdf
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: sphinx-pdf
+          path: sphinx/_build/latex/*.pdf
