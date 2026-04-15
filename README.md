@@ -24,8 +24,14 @@ mdtopdf/
 │   ├── 01-introduction.md
 │   ├── 02-architecture.md
 │   ├── 03-api-reference.md
-│   └── 04-deployment.md
+│   ├── 04-deployment.md
+│   ├── 05-code-examples.md
+│   └── 06-variants.md
+├── filters/               ← shared filters used across tools
+│   ├── doc-type.lua       ← Lua filter for Pandoc + Quarto (AST-level filtering)
+│   └── filter_type.py     ← Python preprocessor for Sphinx (text-level filtering)
 ├── pandoc/
+│   ├── chapter-break.lua  ← Lua filter for chapter page breaks (Eisvogel workaround)
 │   ├── metadata.yaml      ← document-level settings (fonts, colors, layout)
 │   ├── pandoc-guide.md    ← deep-dive reference for Pandoc features
 │   └── Makefile
@@ -669,12 +675,12 @@ The Quarto build generates `_header.tex` from the Makefile variables. It is
 ephemeral and should not be committed:
 
 ```gitignore
-mdtopdf/pandoc/output/
-mdtopdf/quarto/_src/
-mdtopdf/quarto/_build/
-mdtopdf/quarto/_header.tex
-mdtopdf/sphinx/_src/
-mdtopdf/sphinx/_build/
+pandoc/output/
+quarto/_src/
+quarto/_build/
+quarto/_header.tex
+sphinx/_src/
+sphinx/_build/
 ```
 
 ---
@@ -710,12 +716,12 @@ make sync   # or make (which calls sync automatically)
 
 ```gitignore
 # .gitignore entries for this project
-mdtopdf/pandoc/output/
-mdtopdf/quarto/_src/
-mdtopdf/quarto/_build/
-mdtopdf/quarto/_header.tex
-mdtopdf/sphinx/_src/
-mdtopdf/sphinx/_build/
+pandoc/output/
+quarto/_src/
+quarto/_build/
+quarto/_header.tex
+sphinx/_src/
+sphinx/_build/
 ```
 
 ### Chapter File Conventions
