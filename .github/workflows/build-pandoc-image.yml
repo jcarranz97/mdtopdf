@@ -7,11 +7,27 @@ on:
       - pandoc/Dockerfile
       - quarto/Dockerfile
       - sphinx/Dockerfile
+      - pandoc/metadata.yaml
+      - pandoc/chapter-break.lua
+      - quarto/_quarto.yml
+      - quarto/index.md
+      - sphinx/conf.py
+      - sphinx/index.md
+      - filters/doc-type.lua
+      - filters/filter_type.py
   pull_request:
     paths:
       - pandoc/Dockerfile
       - quarto/Dockerfile
       - sphinx/Dockerfile
+      - pandoc/metadata.yaml
+      - pandoc/chapter-break.lua
+      - quarto/_quarto.yml
+      - quarto/index.md
+      - sphinx/conf.py
+      - sphinx/index.md
+      - filters/doc-type.lua
+      - filters/filter_type.py
   workflow_dispatch:
 
 jobs:
@@ -36,9 +52,10 @@ jobs:
       - name: Build (and push on main)
         uses: docker/build-push-action@v7
         with:
-          context: pandoc
+          context: .
           file: pandoc/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
+          provenance: false
           tags: ghcr.io/${{ github.repository_owner }}/mdtopdf-pandoc:latest
 
   # ── Quarto ───────────────────────────────────────────────────────────────────
@@ -62,9 +79,10 @@ jobs:
       - name: Build (and push on main)
         uses: docker/build-push-action@v7
         with:
-          context: quarto
+          context: .
           file: quarto/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
+          provenance: false
           tags: ghcr.io/${{ github.repository_owner }}/mdtopdf-quarto:latest
 
   # ── Sphinx + MyST ─────────────────────────────────────────────────────────────
@@ -88,7 +106,8 @@ jobs:
       - name: Build (and push on main)
         uses: docker/build-push-action@v7
         with:
-          context: sphinx
+          context: .
           file: sphinx/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
+          provenance: false
           tags: ghcr.io/${{ github.repository_owner }}/mdtopdf-sphinx:latest
