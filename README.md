@@ -111,6 +111,9 @@ cd mdtopdf/pandoc/
 make
 ```
 
+> Before running `make`, complete the [local setup](#running-locally-no-docker)
+> to install Pandoc, LaTeX, and the Eisvogel template.
+
 Files to copy into your own project:
 
 | File | Purpose |
@@ -137,9 +140,33 @@ All page headers are controlled by four Makefile variables:
 
 These combine into the **top-left header**: `{DOC_ID} Rev {DOC_MAJOR}.{DOC_MINOR} - {DOC_DATE}`
 
-Pass any combination to `make` — unset variables fall back to defaults:
+Pass any combination as variables — unset variables fall back to defaults.
+
+**With Docker:**
 
 ```bash
+docker run --rm \
+  -v /path/to/your/docs:/docs \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  DOCS_DIR=/docs \
+  DOC_ID=5678 \
+  DOC_MAJOR=2 \
+  DOC_MINOR=01
+
+docker run --rm \
+  -v /path/to/your/docs:/docs \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  DOCS_DIR=/docs \
+  DOC_ID=9001 \
+  DOC_MAJOR=3 \
+  DOC_MINOR=05 \
+  DOC_DATE="June 30, 2026"
+```
+
+**With `make`** (requires [local setup](#running-locally-no-docker)):
+
+```bash
+cd pandoc/
 make DOC_ID=5678 DOC_MAJOR=2 DOC_MINOR=01
 make DOC_ID=9001 DOC_MAJOR=3 DOC_MINOR=05 DOC_DATE="June 30, 2026"
 ```
@@ -316,6 +343,9 @@ without any text-level preprocessing.
 | One `#` heading per file | Maps to one top-level chapter in the TOC |
 
 ### Previewing a single chapter
+
+Chapter preview is a local authoring workflow. It requires
+[local setup](#running-locally-no-docker).
 
 ```bash
 cd pandoc/
