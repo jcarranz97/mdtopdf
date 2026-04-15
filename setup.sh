@@ -2,7 +2,7 @@
 # setup.sh — add mdtopdf to an existing project
 #
 # Run from the root of your project (where docs/ lives):
-#   sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh)
 #
 # Options:
 #   --force   overwrite files that already exist

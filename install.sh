@@ -2,7 +2,7 @@
 # install.sh — install Pandoc, LaTeX (xelatex), and the Eisvogel template
 #
 # Run this script once before using mdtopdf locally (without Docker):
-#   sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
 #
 # Supported platforms:
 #   macOS         — installs via Homebrew (brew must be installed)
@@ -150,6 +150,6 @@ echo ""
 echo "All dependencies are installed."
 echo ""
 echo "Next step: copy the project files into your repo with the setup script:"
-echo "  sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh)"
+echo "  bash <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh)"
 echo ""
 echo "Full documentation: https://github.com/jcarranz97/mdtopdf"
