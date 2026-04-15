@@ -7,5 +7,9 @@ set -e
 #   docker run ... image DOCS_DIR=/docs DOC_ID=1234 DOC_MAJOR=1 DOC_MINOR=0
 case "$1" in
   bash|sh) exec "$@" ;;
-  *)       exec make "$@" ;;
+  # -B / --always-make forces a rebuild every time, regardless of file
+  # timestamps.  This matters when only Make variables change between runs
+  # (e.g. a different DOC_MAJOR/DOC_MINOR) because Make otherwise sees the
+  # output PDF is newer than the source files and skips the build.
+  *)       exec make -B "$@" ;;
 esac
