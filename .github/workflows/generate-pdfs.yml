@@ -9,6 +9,9 @@ jobs:
   pandoc-pdf:
     name: Pandoc PDF
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     container:
       image: ghcr.io/${{ github.repository_owner }}/mdtopdf-pandoc:latest
     steps:
@@ -28,6 +31,9 @@ jobs:
   quarto-pdf:
     name: Quarto PDF
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     container:
       image: ghcr.io/${{ github.repository_owner }}/mdtopdf-quarto:latest
     steps:
@@ -49,6 +55,9 @@ jobs:
   sphinx-pdf:
     name: Sphinx PDF
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     container:
       image: ghcr.io/${{ github.repository_owner }}/mdtopdf-sphinx:latest
     steps:
