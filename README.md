@@ -34,15 +34,18 @@ mdtopdf/
 │   ├── chapter-break.lua  ← Lua filter for chapter page breaks (Eisvogel workaround)
 │   ├── metadata.yaml      ← document-level settings (fonts, colors, layout)
 │   ├── pandoc-guide.md    ← deep-dive reference for Pandoc features
+│   ├── Dockerfile         ← pre-built image for CI and local use
 │   └── Makefile
 ├── quarto/
 │   ├── _quarto.yml        ← Quarto project config (book format, PDF + HTML)
 │   ├── index.md           ← preface / landing page
+│   ├── Dockerfile         ← pre-built image for CI and local use
 │   └── Makefile
 └── sphinx/
     ├── conf.py            ← Sphinx + MyST config
     ├── index.md           ← toctree (table of contents)
     ├── requirements.txt   ← Python dependencies
+    ├── Dockerfile         ← pre-built image for CI and local use
     └── Makefile
 ```
 
@@ -60,6 +63,144 @@ should be added to `.gitignore`.
 
 ---
 
+## Use This for Your Own Project
+
+Want to turn your own Markdown files into a professional PDF without installing
+LaTeX, Pandoc, or Quarto? Clone this repo, drop in your content, and run one
+Docker command.
+
+**1. Clone the repo**
+
+```bash
+git clone https://github.com/jcarranz97/mdtopdf.git
+cd mdtopdf
+```
+
+**2. Replace the sample content with your own files**
+
+Delete the existing chapters and add your own `.md` files to `docs/`. Keep
+the numeric prefix so they sort correctly:
+
+```bash
+rm docs/*.md
+cp ~/my-project/*.md docs/
+# Rename if needed: 01-intro.md, 02-setup.md, 03-usage.md, …
+```
+
+Each file should have a single `#` top-level heading — that becomes the
+chapter title.
+
+**3. Update the document metadata**
+
+Pick the tool you want to use and edit its config file:
+
+| Tool | Config file | What to change |
+|---|---|---|
+| Pandoc | `pandoc/metadata.yaml` | `title`, `author`, `date`, colors, fonts |
+| Quarto | `quarto/_quarto.yml` | `title`, `author`, `date` under `book:` |
+| Sphinx | `sphinx/conf.py` | `project`, `author`, `release` |
+
+**4. Build your PDF**
+
+Run the Docker command for your chosen tool from the repo root (no local
+install needed — everything is in the image):
+
+```bash
+# Pandoc (recommended for standalone PDFs)
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/pandoc \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  make
+
+# Quarto (if you also want HTML output)
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/quarto \
+  -e QUARTO_LATEX_AUTO_INSTALL=false \
+  ghcr.io/jcarranz97/mdtopdf-quarto:latest \
+  make pdf
+
+# Sphinx (if you want a full documentation site)
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/sphinx \
+  ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
+  make pdf
+```
+
+**5. Find your PDF**
+
+| Tool | Output location |
+|---|---|
+| Pandoc | `pandoc/output/platform-api-guide.pdf` |
+| Quarto | `quarto/_build/` |
+| Sphinx | `sphinx/_build/latex/` |
+
+That's it. You can also pass [Document Identity Variables](#document-identity-variables)
+on the `make` command to set the document ID, revision, and date without
+touching any config file:
+
+```bash
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/pandoc \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  make DOC_ID=9001 DOC_MAJOR=2 DOC_MINOR=00 DOC_DATE="May 1, 2026"
+```
+
+---
+
+## Quick Start (run the sample docs)
+
+Each tool has a pre-built Docker image with all dependencies included —
+pandoc, LaTeX, fonts, and templates. No local installation required.
+
+### Pandoc + Eisvogel
+
+```bash
+docker pull ghcr.io/jcarranz97/mdtopdf-pandoc:latest
+
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/pandoc \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  make
+```
+
+Output: `pandoc/output/platform-api-guide.pdf`
+
+### Quarto
+
+```bash
+docker pull ghcr.io/jcarranz97/mdtopdf-quarto:latest
+
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/quarto \
+  -e QUARTO_LATEX_AUTO_INSTALL=false \
+  ghcr.io/jcarranz97/mdtopdf-quarto:latest \
+  make pdf
+```
+
+Output: `quarto/_build/`
+
+### Sphinx + MyST
+
+```bash
+docker pull ghcr.io/jcarranz97/mdtopdf-sphinx:latest
+
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/sphinx \
+  ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
+  make pdf
+```
+
+Output: `sphinx/_build/latex/`
+
+---
+
 ## Pandoc + Eisvogel
 
 Pandoc is a universal document converter. The conversion pipeline is:
@@ -67,59 +208,6 @@ Pandoc is a universal document converter. The conversion pipeline is:
 ```
 docs/*.md  →  Pandoc  →  LaTeX (Eisvogel template)  →  PDF
 ```
-
-### Installation
-
-#### Pandoc
-
-```bash
-# macOS
-brew install pandoc
-
-# Ubuntu / Debian — the apt package is often several major versions behind.
-# Install the official binary instead:
-curl -L https://github.com/jgm/pandoc/releases/latest/download/pandoc-3.6.4-linux-amd64.tar.gz \
-  | tar xz --strip-components=1 -C ~/.local
-
-# Verify
-pandoc --version
-```
-
-#### LaTeX engine (required for PDF output)
-
-```bash
-# macOS
-brew install --cask mactex
-
-# Ubuntu / Debian
-sudo apt install texlive-xetex texlive-fonts-recommended texlive-fonts-extra
-```
-
-#### Eisvogel template
-
-Eisvogel is a third-party template — it is never installed automatically with
-Pandoc. You must place it in Pandoc's user templates directory manually.
-
-```bash
-# Create the templates directory
-mkdir -p ~/.local/share/pandoc/templates
-
-# Download Eisvogel
-# v2.4.2 = last release supporting Pandoc 2.x
-# For Pandoc 3.x, use the latest release from the GitHub releases page
-curl -L https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/2.4.2/Eisvogel-2.4.2.tar.gz \
-  -o /tmp/eisvogel.tar.gz
-
-tar -xzf /tmp/eisvogel.tar.gz -C /tmp/
-cp /tmp/eisvogel.latex ~/.local/share/pandoc/templates/
-
-# Verify
-ls ~/.local/share/pandoc/templates/
-# → eisvogel.latex
-```
-
-> **Version note:** the 2.4.2 release tag has no `v` prefix — the download URL
-> is `.../download/2.4.2/...`, not `.../download/v2.4.2/...`.
 
 ### Build Commands
 
@@ -286,6 +374,64 @@ Table: Exam results — Spring 2026
 ![Caption](path/to/image.png){ width=10cm }
 ```
 
+### Manual Installation
+
+<details>
+<summary>Expand if you prefer to install locally instead of using Docker</summary>
+
+#### Pandoc
+
+```bash
+# macOS
+brew install pandoc
+
+# Ubuntu / Debian — the apt package is often several major versions behind.
+# Install the official binary instead:
+curl -L https://github.com/jgm/pandoc/releases/latest/download/pandoc-3.6.4-linux-amd64.tar.gz \
+  | tar xz --strip-components=1 -C ~/.local
+
+# Verify
+pandoc --version
+```
+
+#### LaTeX engine (required for PDF output)
+
+```bash
+# macOS
+brew install --cask mactex
+
+# Ubuntu / Debian
+sudo apt install texlive-xetex texlive-fonts-recommended texlive-fonts-extra
+```
+
+#### Eisvogel template
+
+Eisvogel is a third-party template — it is never installed automatically with
+Pandoc. You must place it in Pandoc's user templates directory manually.
+
+```bash
+# Create the templates directory
+mkdir -p ~/.local/share/pandoc/templates
+
+# Download Eisvogel
+# v2.4.2 = last release supporting Pandoc 2.x
+# For Pandoc 3.x, use the latest release from the GitHub releases page
+curl -L https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/2.4.2/Eisvogel-2.4.2.tar.gz \
+  -o /tmp/eisvogel.tar.gz
+
+tar -xzf /tmp/eisvogel.tar.gz -C /tmp/
+cp /tmp/eisvogel.latex ~/.local/share/pandoc/templates/
+
+# Verify
+ls ~/.local/share/pandoc/templates/
+# → eisvogel.latex
+```
+
+> **Version note:** the 2.4.2 release tag has no `v` prefix — the download URL
+> is `.../download/2.4.2/...`, not `.../download/v2.4.2/...`.
+
+</details>
+
 ---
 
 ## Quarto
@@ -296,39 +442,6 @@ Quarto is a scientific publishing system built on Pandoc. It produces PDF
 ```
 docs/*.md  →  Quarto  →  LaTeX  →  PDF
                       →  HTML
-```
-
-### Installation
-
-#### Quarto CLI
-
-```bash
-# macOS
-brew install quarto
-
-# Ubuntu / Debian / WSL2
-curl -LO https://github.com/quarto-dev/quarto-cli/releases/download/v1.6.42/quarto-1.6.42-linux-amd64.deb
-sudo dpkg -i quarto-1.6.42-linux-amd64.deb
-rm quarto-1.6.42-linux-amd64.deb
-
-# Verify
-quarto --version
-```
-
-#### LaTeX engine (required for PDF output)
-
-```bash
-# macOS
-brew install --cask mactex
-
-# Ubuntu / Debian / WSL2
-sudo apt install texlive-xetex texlive-fonts-recommended texlive-fonts-extra
-```
-
-Alternatively, Quarto can manage its own minimal LaTeX distribution:
-
-```bash
-quarto install tinytex
 ```
 
 ### Build Commands
@@ -409,6 +522,44 @@ format:
     highlight-style: tango
 ```
 
+### Manual Installation
+
+<details>
+<summary>Expand if you prefer to install locally instead of using Docker</summary>
+
+#### Quarto CLI
+
+```bash
+# macOS
+brew install quarto
+
+# Ubuntu / Debian / WSL2
+curl -LO https://github.com/quarto-dev/quarto-cli/releases/download/v1.6.42/quarto-1.6.42-linux-amd64.deb
+sudo dpkg -i quarto-1.6.42-linux-amd64.deb
+rm quarto-1.6.42-linux-amd64.deb
+
+# Verify
+quarto --version
+```
+
+#### LaTeX engine (required for PDF output)
+
+```bash
+# macOS
+brew install --cask mactex
+
+# Ubuntu / Debian / WSL2
+sudo apt install texlive-xetex texlive-fonts-recommended texlive-fonts-extra
+```
+
+Alternatively, Quarto can manage its own minimal LaTeX distribution:
+
+```bash
+quarto install tinytex
+```
+
+</details>
+
 ---
 
 ## Sphinx + MyST
@@ -420,40 +571,6 @@ support so you never have to write reStructuredText.
 ```
 docs/*.md  →  MyST-Parser  →  Sphinx  →  HTML
                                       →  LaTeX  →  PDF
-```
-
-### Installation
-
-```bash
-cd sphinx/
-
-# Create a virtual environment (recommended)
-python -m venv .venv
-source .venv/bin/activate     # Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Verify
-sphinx-build --version
-```
-
-`requirements.txt` contents:
-
-```text
-sphinx>=7.0
-myst-parser>=3.0
-sphinx-rtd-theme>=2.0
-```
-
-#### LaTeX engine (for PDF output only)
-
-```bash
-# macOS
-brew install --cask mactex
-
-# Ubuntu / Debian / WSL2
-sudo apt install texlive-xetex texlive-fonts-recommended texlive-fonts-extra
 ```
 
 ### Build Commands
@@ -550,6 +667,45 @@ latex_elements = {
 :maxdepth: 3     # heading levels shown in sidebar and TOC
 :numbered:       # auto-number sections
 ```
+
+### Manual Installation
+
+<details>
+<summary>Expand if you prefer to install locally instead of using Docker</summary>
+
+```bash
+cd sphinx/
+
+# Create a virtual environment (recommended)
+python -m venv .venv
+source .venv/bin/activate     # Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Verify
+sphinx-build --version
+```
+
+`requirements.txt` contents:
+
+```text
+sphinx>=7.0
+myst-parser>=3.0
+sphinx-rtd-theme>=2.0
+```
+
+#### LaTeX engine (for PDF output only)
+
+```bash
+# macOS
+brew install --cask mactex
+
+# Ubuntu / Debian / WSL2
+sudo apt install texlive-xetex texlive-fonts-recommended texlive-fonts-extra
+```
+
+</details>
 
 ---
 
@@ -974,12 +1130,57 @@ citizen compared to the HTML output.
 
 - **Commit only source, not output.** `.md` files diff cleanly; PDFs and HTML
   sites do not. Generate output in CI or on demand.
-- **CI builds.** Add a GitHub Actions job that runs `make` on every push to
-  `main` and uploads the PDF as a build artifact so contributors always have
-  access to the latest assembled document without installing any tools locally.
+- **CI builds.** The GitHub Actions workflow (`.github/workflows/generate-pdfs.yml`)
+  runs on every pull request and uses the Docker images to build all three PDFs,
+  uploading them as downloadable artifacts for side-by-side comparison.
 - **Print vs. screen.** Set `linkcolor: black` / `urlcolor: black` (Pandoc,
   Quarto) for documents that will be printed; use accent colors for digital
   distribution.
 - **Font availability.** All three tools rely on `xelatex` to use system fonts
   by name. Run `fc-list : family | sort` to see what is available. The
   `DejaVu` family is a safe default that ships with most Linux distributions.
+
+---
+
+## Maintaining Docker Images
+
+Each tool has a pre-built image hosted on **GitHub Container Registry (GHCR)**,
+free for public repositories. Images are rebuilt automatically when their
+`Dockerfile` changes on `main`, and can be triggered manually from the Actions
+tab.
+
+| Tool | Image |
+|---|---|
+| Pandoc + Eisvogel | `ghcr.io/jcarranz97/mdtopdf-pandoc:latest` |
+| Quarto | `ghcr.io/jcarranz97/mdtopdf-quarto:latest` |
+| Sphinx + MyST | `ghcr.io/jcarranz97/mdtopdf-sphinx:latest` |
+
+### Rebuild and push an image
+
+```bash
+# Pandoc
+cd pandoc/
+docker build -t ghcr.io/jcarranz97/mdtopdf-pandoc:latest .
+docker push ghcr.io/jcarranz97/mdtopdf-pandoc:latest
+
+# Quarto (pin a specific version with --build-arg)
+cd quarto/
+docker build --build-arg QUARTO_VERSION=1.6.42 \
+  -t ghcr.io/jcarranz97/mdtopdf-quarto:latest .
+docker push ghcr.io/jcarranz97/mdtopdf-quarto:latest
+
+# Sphinx
+cd sphinx/
+docker build -t ghcr.io/jcarranz97/mdtopdf-sphinx:latest .
+docker push ghcr.io/jcarranz97/mdtopdf-sphinx:latest
+```
+
+Pushing requires logging in first:
+
+```bash
+docker login ghcr.io -u jcarranz97 --password-stdin
+```
+
+> **Note:** If `sphinx/requirements.txt` changes (new packages or version
+> bumps), rebuild and push the Sphinx image so CI picks up the updated
+> dependencies.
