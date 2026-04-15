@@ -124,47 +124,6 @@ Put your `.md` files in `docs/` and run `make`.
 
 ---
 
-## Build Commands
-
-```bash
-cd pandoc/
-
-make                                              # full PDF, default vars
-make DOC_TYPE=type2                               # different variant
-make DOC_ID=5678 DOC_MAJOR=2 DOC_MINOR=01        # custom header
-make DOC_ID=5678 DOC_MAJOR=2 DOC_MINOR=01 DOC_DATE="May 1, 2026"
-
-make preview CHAPTER=02     # single chapter preview
-make single                 # pandoc-guide.md only → output/pandoc-guide.pdf
-make clean                  # remove output/
-make help                   # list all targets
-```
-
-Output: `pandoc/output/platform-api-guide.pdf`
-
-### Full CLI Reference
-
-```bash
-pandoc metadata.yaml ../docs/*.md \
-  --from markdown+smart \
-  --to pdf \
-  --template eisvogel \
-  --pdf-engine xelatex \
-  --highlight-style tango \
-  --number-sections \
-  -o output/platform-api-guide.pdf
-```
-
-| Flag | Purpose |
-|---|---|
-| `--from markdown+smart` | Enable smart quotes and dashes |
-| `--template eisvogel` | Use the Eisvogel LaTeX template |
-| `--pdf-engine xelatex` | Required for custom fonts (TTF/OTF) |
-| `--highlight-style tango` | Syntax highlight theme (`pygments`, `kate`, `zenburn`, …) |
-| `--number-sections` | Auto-number headings (1, 1.1, 1.1.1 …) |
-
----
-
 ## Document Identity Variables
 
 All page headers are controlled by four Makefile variables:
@@ -369,12 +328,16 @@ pandoc metadata.yaml ../docs/02-architecture.md \
 
 ---
 
-## Manual Installation
+## Running Locally (no Docker)
 
-<details>
-<summary>Expand if you prefer to install locally instead of using Docker</summary>
+If you prefer not to use the Docker image, install the required tools directly
+on your system and run the Makefile from the `pandoc/` directory.
 
-### Pandoc
+### Installation
+
+Install the following packages before running any build commands:
+
+#### Pandoc
 
 ```bash
 # macOS
@@ -387,7 +350,7 @@ curl -L https://github.com/jgm/pandoc/releases/latest/download/pandoc-3.6.4-linu
 pandoc --version
 ```
 
-### LaTeX engine
+#### LaTeX engine
 
 ```bash
 # macOS
@@ -397,7 +360,7 @@ brew install --cask mactex
 sudo apt install texlive-xetex texlive-fonts-recommended texlive-fonts-extra
 ```
 
-### Eisvogel template
+#### Eisvogel template
 
 ```bash
 mkdir -p ~/.local/share/pandoc/templates
@@ -413,7 +376,44 @@ ls ~/.local/share/pandoc/templates/
 
 > **Version note:** the 2.4.2 release tag has no `v` prefix.
 
-</details>
+### Build Commands
+
+```bash
+cd pandoc/
+
+make                                              # full PDF, default vars
+make DOC_TYPE=type2                               # different variant
+make DOC_ID=5678 DOC_MAJOR=2 DOC_MINOR=01        # custom header
+make DOC_ID=5678 DOC_MAJOR=2 DOC_MINOR=01 DOC_DATE="May 1, 2026"
+
+make preview CHAPTER=02     # single chapter preview
+make single                 # pandoc-guide.md only → output/pandoc-guide.pdf
+make clean                  # remove output/
+make help                   # list all targets
+```
+
+Output: `pandoc/output/platform-api-guide.pdf`
+
+#### Full CLI Reference
+
+```bash
+pandoc metadata.yaml ../docs/*.md \
+  --from markdown+smart \
+  --to pdf \
+  --template eisvogel \
+  --pdf-engine xelatex \
+  --highlight-style tango \
+  --number-sections \
+  -o output/platform-api-guide.pdf
+```
+
+| Flag | Purpose |
+|---|---|
+| `--from markdown+smart` | Enable smart quotes and dashes |
+| `--template eisvogel` | Use the Eisvogel LaTeX template |
+| `--pdf-engine xelatex` | Required for custom fonts (TTF/OTF) |
+| `--highlight-style tango` | Syntax highlight theme (`pygments`, `kate`, `zenburn`, …) |
+| `--number-sections` | Auto-number headings (1, 1.1, 1.1.1 …) |
 
 ---
 
