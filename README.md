@@ -1,5 +1,9 @@
 # Markdown → PDF: Tool Comparison
 
+[![Build Docker images](https://github.com/jcarranz97/mdtopdf/actions/workflows/build-pandoc-image.yml/badge.svg)](https://github.com/jcarranz97/mdtopdf/actions/workflows/build-pandoc-image.yml)
+[![Test Docker images](https://github.com/jcarranz97/mdtopdf/actions/workflows/test-docker-images.yml/badge.svg)](https://github.com/jcarranz97/mdtopdf/actions/workflows/test-docker-images.yml)
+[![Generate PDFs](https://github.com/jcarranz97/mdtopdf/actions/workflows/generate-pdfs.yml/badge.svg)](https://github.com/jcarranz97/mdtopdf/actions/workflows/generate-pdfs.yml)
+
 This folder is a hands-on comparison of three approaches to turning Markdown
 files into professional PDFs. All three tools render the same source content
 from `docs/` so the output can be compared side-by-side.
