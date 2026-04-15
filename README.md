@@ -123,8 +123,12 @@ and want to add local PDF generation to it — without Docker and without creati
 a separate repo. You copy four files from mdtopdf into your project and run
 `make` directly. Once copied, there is no further dependency on this repository.
 
-Requires [local installation](#running-locally-no-docker) of Pandoc, LaTeX, and
-the Eisvogel template.
+Requires Pandoc, LaTeX, and the Eisvogel template installed locally. If you
+haven't done that yet, run the install script first:
+
+```bash
+sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
+```
 
 **Project layout after setup:**
 
@@ -144,17 +148,18 @@ relative to the `pandoc/` directory, so this layout is required for the
 defaults to work. If your docs live elsewhere, override `DOCS_DIR` at build
 time.
 
-Download the four files directly without cloning the full repo:
+Run the setup script from the root of your project (where `docs/` lives):
 
 ```bash
-mkdir -p your-project/pandoc your-project/filters
+sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh)
+```
 
-BASE=https://raw.githubusercontent.com/jcarranz97/mdtopdf/main
+The script creates the `pandoc/` and `filters/` directories and downloads the
+four files. It skips any file that already exists — pass `--force` to overwrite.
 
-curl -o your-project/pandoc/Makefile           "$BASE/pandoc/Makefile"
-curl -o your-project/pandoc/metadata.yaml      "$BASE/pandoc/metadata.yaml"
-curl -o your-project/pandoc/chapter-break.lua  "$BASE/pandoc/chapter-break.lua"
-curl -o your-project/filters/doc-type.lua      "$BASE/filters/doc-type.lua"
+```bash
+# Overwrite existing files
+sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh) --force
 ```
 
 Edit `pandoc/metadata.yaml` to set your document title, author, and visual
@@ -437,7 +442,20 @@ directory.
 
 ### Installation
 
-Install the following packages before running any build commands:
+Run the install script to set up all dependencies at once:
+
+```bash
+sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
+```
+
+Supported platforms: **macOS** (requires Homebrew) and **Ubuntu/Debian**.
+The script installs Pandoc, XeLaTeX, and the Eisvogel template, skipping
+anything that is already present.
+
+If you prefer to install manually, expand the steps below.
+
+<details>
+<summary>Manual installation steps</summary>
 
 #### Pandoc
 
@@ -477,6 +495,8 @@ ls ~/.local/share/pandoc/templates/
 ```
 
 > **Version note:** the 2.4.2 release tag has no `v` prefix.
+
+</details>
 
 ### Build Commands
 
