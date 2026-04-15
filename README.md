@@ -377,7 +377,8 @@ pandoc metadata.yaml ../docs/02-architecture.md \
 ## Running Locally (no Docker)
 
 If you prefer not to use the Docker image, install the required tools directly
-on your system and run the Makefile from the `pandoc/` directory.
+on your system and copy a small set of files into your own project. Once those
+files are in place you have no further dependency on this repository.
 
 ### Installation
 
@@ -422,10 +423,48 @@ ls ~/.local/share/pandoc/templates/
 
 > **Version note:** the 2.4.2 release tag has no `v` prefix.
 
-### Build Commands
+### Project Setup
+
+Copy four files from this repo into your project. The expected layout is:
+
+```text
+your-project/
+├── docs/                  ← your existing Markdown files (already here)
+├── filters/
+│   └── doc-type.lua       ← copy from mdtopdf
+└── pandoc/
+    ├── Makefile           ← copy from mdtopdf
+    ├── metadata.yaml      ← copy from mdtopdf
+    └── chapter-break.lua  ← copy from mdtopdf
+```
+
+The Makefile looks for docs at `../docs/` and the filter at `../filters/` relative
+to the `pandoc/` directory, so this layout is required for the defaults to work.
+If your docs live elsewhere, override `DOCS_DIR` at build time (see
+[Build Commands](#build-commands) below).
+
+Download the files directly without cloning the full repo:
 
 ```bash
-cd pandoc/
+mkdir -p your-project/pandoc your-project/filters
+
+BASE=https://raw.githubusercontent.com/jcarranz97/mdtopdf/main
+
+curl -o your-project/pandoc/Makefile           "$BASE/pandoc/Makefile"
+curl -o your-project/pandoc/metadata.yaml      "$BASE/pandoc/metadata.yaml"
+curl -o your-project/pandoc/chapter-break.lua  "$BASE/pandoc/chapter-break.lua"
+curl -o your-project/filters/doc-type.lua      "$BASE/filters/doc-type.lua"
+```
+
+Edit `pandoc/metadata.yaml` to set your document title, author, and visual
+settings before the first build.
+
+### Build Commands
+
+Run all commands from your project's `pandoc/` directory:
+
+```bash
+cd your-project/pandoc/
 
 make                                              # full PDF, default vars
 make DOC_TYPE=type2                               # different variant
@@ -438,7 +477,13 @@ make clean                  # remove output/
 make help                   # list all targets
 ```
 
-Output: `pandoc/output/platform-api-guide.pdf`
+Output: `your-project/pandoc/output/platform-api-guide.pdf`
+
+If your docs folder is not at `../docs/`, pass its path explicitly:
+
+```bash
+make DOCS_DIR=/path/to/your/docs
+```
 
 #### Full CLI Reference
 
