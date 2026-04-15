@@ -21,8 +21,10 @@ mainfont: "DejaVu Serif"
 sansfont: "DejaVu Sans"
 monofont: "DejaVu Sans Mono"
 geometry: "margin=2.5cm"
-linkcolor: "4A90D9"
-urlcolor: "4A90D9"
+header-includes:
+  - \definecolor{accentblue}{HTML}{4A90D9}
+linkcolor: accentblue
+urlcolor: accentblue
 numbersections: true
 # ─── Headers and footers ──────────────────────────────────────────────────────
 # These are injected at build time via --metadata flags in the Makefile so that
