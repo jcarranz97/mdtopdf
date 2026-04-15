@@ -22,11 +22,23 @@ RUN mkdir -p /usr/share/pandoc/data/templates \
     && mv eisvogel.latex /usr/share/pandoc/data/templates/ \
     && rm -f Eisvogel.tar.gz
 
-# Bake default config files into the image at /defaults/ so users can
-# reference them without cloning the repo.
+# Mirror the repo layout so the Makefile's relative paths resolve identically
+# inside the container as they do in the repo:
+#   /pandoc/Makefile  →  WORKDIR
+#   /pandoc/metadata.yaml  /pandoc/chapter-break.lua
+#   /filters/doc-type.lua  →  ../filters/ from /pandoc/
+#
+# /defaults/ is kept as a user-facing extraction point (Option 2 in the docs).
 # Build context must be the repo root for these COPY paths to resolve.
-COPY pandoc/metadata.yaml /defaults/metadata.yaml
-COPY pandoc/chapter-break.lua /defaults/chapter-break.lua
-COPY filters/doc-type.lua /defaults/doc-type.lua
+COPY pandoc/Makefile          /pandoc/Makefile
+COPY pandoc/metadata.yaml     /pandoc/metadata.yaml
+COPY pandoc/chapter-break.lua /pandoc/chapter-break.lua
+COPY filters/doc-type.lua     /filters/doc-type.lua
+COPY pandoc/metadata.yaml     /defaults/metadata.yaml
 
-WORKDIR /workspace
+COPY pandoc/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+WORKDIR /pandoc
