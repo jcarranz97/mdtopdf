@@ -40,8 +40,21 @@ source_suffix = {
 # Root document (the main toctree)
 root_doc = "index"
 
-# Patterns to ignore when looking for source files
-exclude_patterns = ["_build", "_src/.gitkeep", "Thumbs.db", ".DS_Store", ".venv"]
+# Patterns to ignore when looking for source files.
+# Both venv/ and .venv/ are excluded so Sphinx never walks into the virtual
+# environment and tries to parse package README files or autosummary templates
+# as documentation sources.
+exclude_patterns = [
+    "_build",
+    "_build/**",
+    "venv",
+    "venv/**",
+    ".venv",
+    ".venv/**",
+    "_src/.gitkeep",
+    "Thumbs.db",
+    ".DS_Store",
+]
 
 # ─── MyST configuration ───────────────────────────────────────────────────────
 
@@ -53,6 +66,10 @@ myst_enable_extensions = [
 ]
 
 myst_heading_anchors = 3    # auto-generate anchors for h1–h3
+
+# Prefix every autosectionlabel with the document path so two files that share
+# a heading name (e.g. "Overview") don't produce duplicate-label warnings.
+autosectionlabel_prefix_document = True
 
 # ─── HTML output ──────────────────────────────────────────────────────────────
 

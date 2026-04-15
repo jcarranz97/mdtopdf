@@ -559,7 +559,9 @@ The same `.md` source files can produce different PDFs for different audiences
 by wrapping content in **fenced divs** tagged with a document type. Content
 outside any div is always included.
 
-### Syntax in `.md` files
+### Include syntax
+
+Show a block only for specific types:
 
 ```markdown
 This paragraph appears in every variant.
@@ -569,17 +571,101 @@ This block is only included when DOC_TYPE=type1.
 :::
 
 ::: {.type1 .type2}
-This block is included in TYPE1 and TYPE2, but not TYPE3.
+This block is included when DOC_TYPE=type1 OR DOC_TYPE=type2.
+:::
+```
+
+### Negation syntax (if / else)
+
+Use `.not-typeN` to show a block for every type **except** the listed ones.
+This gives you a true if/else without naming every other type:
+
+```markdown
+::: {.type1}
+This text appears only in the type1 build.
 :::
 
-::: {.type3}
-This block is only included when DOC_TYPE=type3.
+::: {.not-type1}
+This text appears in every other build (type2, type3, …).
+:::
+```
+
+Stack multiple negations to exclude more than one type:
+
+```markdown
+::: {.not-type1 .not-type2}
+This appears only when DOC_TYPE is neither type1 nor type2.
+:::
+```
+
+Three-way if / else-if / else — only one block is rendered per build:
+
+```markdown
+::: {.type1}
+Shown only for type1.
+:::
+
+::: {.type2}
+Shown only for type2.
+:::
+
+::: {.not-type1 .not-type2}
+Shown for type3 (or any type that is not type1 or type2).
 :::
 ```
 
 The `:::` fenced div syntax is standard Pandoc Markdown. GitHub and Obsidian
-render the content inside without any special treatment (the `{.typeN}` class
-is simply ignored by those renderers), so authors see all content in preview.
+render the content inside without any special treatment (the type classes are
+simply ignored by those renderers), so authors see all content in preview.
+
+### Inline syntax (spans — for table cells and partial sentences)
+
+Block-level divs cannot go inside a table cell. For **cell-level** or
+**inline** conditional content, use a span — the same class names apply:
+
+```markdown
+[conditional text]{.type1}       ← shown only in type1
+[conditional text]{.not-type2}   ← shown in every type except type2
+```
+
+**Primary use-case: same table in two types, different cell content.**
+Wrap the table in a div so it appears in both types, then use spans inside
+cells to vary the text:
+
+```markdown
+::: {.type1 .type2}
+| Setting | Value |
+|---------|-------|
+| Mode    | basic[ and advanced]{.type1} |
+| Tier    | standard[ / enterprise]{.not-type2} |
+:::
+```
+
+type1 renders: `basic and advanced` / `standard / enterprise`  
+type2 renders: `basic` / `standard`
+
+**Authoring tip — put spaces inside the span, not outside:**
+
+```markdown
+<!-- Correct: removal leaves clean "text1" -->
+text1[ and text2]{.type1}
+
+<!-- Avoid: removal leaves "text1 " with a trailing space -->
+text1 [and text2]{.type1}
+```
+
+Spans also work in headings, paragraphs, and anywhere inline content appears.
+
+### Rules
+
+| Class | Behaviour |
+|---|---|
+| None | Always shown |
+| `.typeN` | Shown only if `DOC_TYPE` matches one of the listed types |
+| `.not-typeN` | Shown unless `DOC_TYPE` matches one of the listed types |
+| Mixed (`.typeN` + `.not-typeN`) | Include-classes take precedence; avoid mixing |
+
+Applies equally to block-level divs (`::: {…}`) and inline spans (`[…]{…}`).
 
 ### Building a Specific Variant
 
@@ -602,14 +688,13 @@ If `DOC_TYPE` is not set, all content is kept (no filtering applied).
 
 | Tool | Mechanism | File |
 |---|---|---|
-| **Pandoc** | Lua filter reads `DOC_TYPE` from env, strips non-matching `Div` AST nodes | `filters/doc-type.lua` |
+| **Pandoc** | Lua filter handles both `Div` (block) and `Span` (inline) AST nodes | `filters/doc-type.lua` |
 | **Quarto** | Same Lua filter, registered in `_quarto.yml` under `project.filters` | `filters/doc-type.lua` |
-| **Sphinx** | Python pre-processor called in the `sync` Makefile step before staging to `_src/` | `filters/filter_type.py` |
+| **Sphinx** | Python pre-processor: one regex pass for block divs, one for inline spans | `filters/filter_type.py` |
 
 Pandoc and Quarto filter at the **AST level** (after parsing, before rendering)
 so the filter is format-agnostic. Sphinx filters at the **text level** before
-the file is handed to Sphinx, which is equivalent for the simple div syntax
-used here.
+the file is handed to Sphinx, which is equivalent for the syntax used here.
 
 ### Adding a New Type
 
