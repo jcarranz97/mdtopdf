@@ -1,15 +1,15 @@
-# mdtopdf — Markdown to PDF with Pandoc + Eisvogel
+# mdtopdf — Markdown to PDF with Pandoc
 
 [![Build Docker images](https://github.com/jcarranz97/mdtopdf/actions/workflows/build-pandoc-image.yml/badge.svg)](https://github.com/jcarranz97/mdtopdf/actions/workflows/build-pandoc-image.yml)
 [![Test Docker images](https://github.com/jcarranz97/mdtopdf/actions/workflows/test-docker-images.yml/badge.svg)](https://github.com/jcarranz97/mdtopdf/actions/workflows/test-docker-images.yml)
 [![Generate PDFs](https://github.com/jcarranz97/mdtopdf/actions/workflows/generate-pdfs.yml/badge.svg)](https://github.com/jcarranz97/mdtopdf/actions/workflows/generate-pdfs.yml)
 
-A template and Docker image for generating professional PDFs from Markdown using
-**Pandoc + Eisvogel**. Write your content in plain Markdown, run one command,
+A configurable framework and Docker image for generating professional PDFs from
+Markdown using **Pandoc**. Write your content in plain Markdown, run one command,
 get a polished PDF — no LaTeX knowledge required.
 
-The Docker image bundles Pandoc, XeLaTeX, the Eisvogel template, fonts, and the
-Makefile so you don't need to install anything locally.
+The Docker image bundles Pandoc, XeLaTeX, fonts, and the Makefile so you don't
+need to install anything locally.
 
 ---
 
@@ -265,6 +265,27 @@ citecolor: "4A90D9"
 
 ---
 
+## Example Templates
+
+Different LaTeX templates can be swapped in via the `--template` flag and
+`metadata.yaml`. The following templates have been tested and documented.
+
+### Eisvogel
+
+[Eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) is a clean,
+professional LaTeX template for Pandoc. It supports title pages, colored
+headings, syntax highlighting, and a wide range of layout options — all
+configurable through YAML front matter.
+
+The default configuration in this repo (`pandoc/metadata.yaml`) targets
+Eisvogel. See the [Customization](#customization-metadatayaml) section for the
+full list of supported variables and the
+[Manual Installation](#manual-installation) section for setup instructions.
+
+> Screenshots coming soon.
+
+---
+
 ## Document Variants (Conditional Content)
 
 The same `.md` source can produce different PDFs for different audiences by
@@ -424,6 +445,6 @@ images may be out of date.
 
 | Tool | Best for |
 |---|---|
-| Pandoc + Eisvogel *(this project)* | Single or multi-file PDFs, CLI-driven, full control |
+| Pandoc *(this project)* | Single or multi-file PDFs, CLI-driven, configurable templates |
 | Quarto | Books or reports that need both PDF and HTML from one source |
 | Sphinx + MyST | Full documentation sites, Python projects |
