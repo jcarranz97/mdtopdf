@@ -344,8 +344,24 @@ without any text-level preprocessing.
 
 ### Previewing a single chapter
 
-Chapter preview is a local authoring workflow. It requires
-[local setup](#running-locally-no-docker).
+**With Docker:**
+
+```bash
+docker run --rm \
+  -v /path/to/your/docs:/docs \
+  -v "$(pwd)/output":/pandoc/output \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  preview \
+  CHAPTER=02
+```
+
+Output: `./output/preview-02.pdf`
+
+> Unlike the standard build, the `preview` target always writes its output to
+> `/pandoc/output/` inside the container, so a second volume mount is required
+> to retrieve the file.
+
+**With `make`** (requires [local setup](#running-locally-no-docker)):
 
 ```bash
 cd pandoc/
