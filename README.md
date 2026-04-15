@@ -65,89 +65,150 @@ should be added to `.gitignore`.
 
 ## Use This for Your Own Project
 
-Want to turn your own Markdown files into a professional PDF without installing
-LaTeX, Pandoc, or Quarto? Clone this repo, drop in your content, and run one
-Docker command.
+Your Markdown files stay where they are. Pull the Docker image and point it at
+your docs — no cloning, no copying files around.
 
-**1. Clone the repo**
+---
+
+### Option 1 — Instant PDF (no config needed)
+
+```bash
+docker run --rm \
+  -v /path/to/your/docs:/docs \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  pandoc /docs/*.md \
+    --template eisvogel \
+    --pdf-engine xelatex \
+    --from markdown+smart \
+    --toc --number-sections \
+    --metadata title="My Document" \
+    --metadata author="Your Name" \
+    -o /docs/output.pdf
+```
+
+Replace `/path/to/your/docs` with the folder containing your `.md` files.
+The PDF is written back into the same folder.
+
+---
+
+### Option 2 — Use the default styling (metadata.yaml)
+
+The image ships a ready-to-use `metadata.yaml` at `/defaults/metadata.yaml`
+with Eisvogel styling pre-configured (title page, fonts, colors, headers).
+Mount only your docs folder and reference it:
+
+```bash
+docker run --rm \
+  -v /path/to/your/docs:/docs \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  pandoc /defaults/metadata.yaml /docs/*.md \
+    --template eisvogel \
+    --pdf-engine xelatex \
+    -o /docs/output.pdf
+```
+
+---
+
+### Option 3 — Customize the styling
+
+Copy the default `metadata.yaml` out of the image, edit it, then mount it
+alongside your docs:
+
+```bash
+# 1. Extract the default config
+docker run --rm ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  cat /defaults/metadata.yaml > metadata.yaml
+
+# 2. Edit metadata.yaml — change title, author, fonts, colors, etc.
+
+# 3. Build using your custom config
+docker run --rm \
+  -v /path/to/your/docs:/docs \
+  -v "$(pwd)/metadata.yaml":/metadata.yaml \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  pandoc /metadata.yaml /docs/*.md \
+    --template eisvogel \
+    --pdf-engine xelatex \
+    -o /docs/output.pdf
+```
+
+The image also ships the Lua filters at `/defaults/doc-type.lua` (conditional
+content) and `/defaults/chapter-break.lua` (chapter page breaks). Add them to
+the pandoc command with `--lua-filter=/defaults/doc-type.lua` if you use the
+`::: {.type1}` syntax in your docs.
+
+---
+
+### Option 3 (Quarto) — Extract defaults and adapt
+
+The Quarto image ships its default project config at `/defaults/`:
+
+```bash
+# Extract the default configs
+docker run --rm ghcr.io/jcarranz97/mdtopdf-quarto:latest \
+  cat /defaults/_quarto.yml > _quarto.yml
+docker run --rm ghcr.io/jcarranz97/mdtopdf-quarto:latest \
+  cat /defaults/index.md > index.md
+```
+
+Edit `_quarto.yml` to list your own chapter files under `book.chapters`, then
+mount your project directory and build:
+
+```bash
+docker run --rm \
+  -v /path/to/your/project:/project \
+  -w /project \
+  -e QUARTO_LATEX_AUTO_INSTALL=false \
+  ghcr.io/jcarranz97/mdtopdf-quarto:latest \
+  quarto render --to pdf
+```
+
+---
+
+### Option 3 (Sphinx) — Extract defaults and adapt
+
+The Sphinx image ships its default config at `/defaults/`:
+
+```bash
+# Extract the default configs
+docker run --rm ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
+  cat /defaults/conf.py > conf.py
+docker run --rm ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
+  cat /defaults/index.md > index.md
+```
+
+Edit `conf.py` (project name, author) and `index.md` (add your chapter files
+to the toctree), then build:
+
+```bash
+docker run --rm \
+  -v /path/to/your/project:/project \
+  ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
+  sphinx-build -b latex /project /project/_build/latex
+```
+
+---
+
+### Option 4 — Full project (Makefile, CI, all three tools)
+
+Clone the repo when you want the complete setup: the Makefile with all
+targets, CI workflows, or to use all three tools side by side.
 
 ```bash
 git clone https://github.com/jcarranz97/mdtopdf.git
 cd mdtopdf
 ```
 
-**2. Replace the sample content with your own files**
+Files to copy into your own project if you want to adopt a specific tool:
 
-Delete the existing chapters and add your own `.md` files to `docs/`. Keep
-the numeric prefix so they sort correctly:
-
-```bash
-rm docs/*.md
-cp ~/my-project/*.md docs/
-# Rename if needed: 01-intro.md, 02-setup.md, 03-usage.md, …
-```
-
-Each file should have a single `#` top-level heading — that becomes the
-chapter title.
-
-**3. Update the document metadata**
-
-Pick the tool you want to use and edit its config file:
-
-| Tool | Config file | What to change |
+| Tool | Files to copy | What they do |
 |---|---|---|
-| Pandoc | `pandoc/metadata.yaml` | `title`, `author`, `date`, colors, fonts |
-| Quarto | `quarto/_quarto.yml` | `title`, `author`, `date` under `book:` |
-| Sphinx | `sphinx/conf.py` | `project`, `author`, `release` |
+| Pandoc | `pandoc/metadata.yaml`, `pandoc/Makefile`, `pandoc/chapter-break.lua`, `filters/doc-type.lua` | Styling, build targets, filters |
+| Quarto | `quarto/_quarto.yml`, `quarto/index.md`, `quarto/Makefile` | Project config, preface, build targets |
+| Sphinx | `sphinx/conf.py`, `sphinx/index.md`, `sphinx/Makefile`, `sphinx/requirements.txt` | Build config, toctree, build targets, deps |
 
-**4. Build your PDF**
-
-Run the Docker command for your chosen tool from the repo root (no local
-install needed — everything is in the image):
-
-```bash
-# Pandoc (recommended for standalone PDFs)
-docker run --rm \
-  -v "$(pwd)":/workspace \
-  -w /workspace/pandoc \
-  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
-  make
-
-# Quarto (if you also want HTML output)
-docker run --rm \
-  -v "$(pwd)":/workspace \
-  -w /workspace/quarto \
-  -e QUARTO_LATEX_AUTO_INSTALL=false \
-  ghcr.io/jcarranz97/mdtopdf-quarto:latest \
-  make pdf
-
-# Sphinx (if you want a full documentation site)
-docker run --rm \
-  -v "$(pwd)":/workspace \
-  -w /workspace/sphinx \
-  ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
-  make pdf
-```
-
-**5. Find your PDF**
-
-| Tool | Output location |
-|---|---|
-| Pandoc | `pandoc/output/platform-api-guide.pdf` |
-| Quarto | `quarto/_build/` |
-| Sphinx | `sphinx/_build/latex/` |
-
-That's it. You can also pass [Document Identity Variables](#document-identity-variables)
-on the `make` command to set the document ID, revision, and date without
-touching any config file:
-
-```bash
-docker run --rm \
-  -v "$(pwd)":/workspace \
-  -w /workspace/pandoc \
-  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
-  make DOC_ID=9001 DOC_MAJOR=2 DOC_MINOR=00 DOC_DATE="May 1, 2026"
-```
+Put your `.md` files in `docs/` and run via Docker (see
+[Quick Start](#quick-start-run-the-sample-docs)) or locally with `make`.
 
 ---
 
@@ -1149,11 +1210,11 @@ free for public repositories. Images are rebuilt automatically when their
 `Dockerfile` changes on `main`, and can be triggered manually from the Actions
 tab.
 
-| Tool | Image |
-|---|---|
-| Pandoc + Eisvogel | `ghcr.io/jcarranz97/mdtopdf-pandoc:latest` |
-| Quarto | `ghcr.io/jcarranz97/mdtopdf-quarto:latest` |
-| Sphinx + MyST | `ghcr.io/jcarranz97/mdtopdf-sphinx:latest` |
+| Tool | Image | Defaults baked in at `/defaults/` |
+|---|---|---|
+| Pandoc + Eisvogel | `ghcr.io/jcarranz97/mdtopdf-pandoc:latest` | `metadata.yaml`, `chapter-break.lua`, `doc-type.lua` |
+| Quarto | `ghcr.io/jcarranz97/mdtopdf-quarto:latest` | `_quarto.yml`, `index.md`, `doc-type.lua` |
+| Sphinx + MyST | `ghcr.io/jcarranz97/mdtopdf-sphinx:latest` | `conf.py`, `index.md`, `filter_type.py` |
 
 ### Rebuild and push an image
 

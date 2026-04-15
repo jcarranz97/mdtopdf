@@ -22,4 +22,11 @@ RUN mkdir -p /usr/share/pandoc/data/templates \
     && mv eisvogel.latex /usr/share/pandoc/data/templates/ \
     && rm -f Eisvogel.tar.gz
 
+# Bake default config files into the image at /defaults/ so users can
+# reference them without cloning the repo.
+# Build context must be the repo root for these COPY paths to resolve.
+COPY pandoc/metadata.yaml /defaults/metadata.yaml
+COPY pandoc/chapter-break.lua /defaults/chapter-break.lua
+COPY filters/doc-type.lua /defaults/doc-type.lua
+
 WORKDIR /workspace

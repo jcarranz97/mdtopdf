@@ -20,4 +20,11 @@ RUN curl -fsSLo /tmp/quarto.deb \
     && dpkg -i /tmp/quarto.deb \
     && rm /tmp/quarto.deb
 
+# Bake default config files into the image at /defaults/ so users can
+# reference them without cloning the repo.
+# Build context must be the repo root for these COPY paths to resolve.
+COPY quarto/_quarto.yml /defaults/_quarto.yml
+COPY quarto/index.md /defaults/index.md
+COPY filters/doc-type.lua /defaults/doc-type.lua
+
 WORKDIR /workspace
