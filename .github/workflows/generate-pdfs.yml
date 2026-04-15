@@ -4,6 +4,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+  # actions/checkout, actions/setup-python, and actions/upload-artifact still
+  # run on Node.js 20, which is deprecated and will be removed from runners on
+  # September 16, 2026. This opts into Node.js 24 early to silence the warning.
+  # Remove once the actions ship versions that natively target Node.js 24.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── Pandoc + Eisvogel ────────────────────────────────────────────────────────
   pandoc-pdf:
