@@ -127,7 +127,7 @@ Requires Pandoc, LaTeX, and the Eisvogel template installed locally. If you
 haven't done that yet, run the install script first:
 
 ```bash
-sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
 ```
 
 **Project layout after setup:**
@@ -151,7 +151,7 @@ time.
 Run the setup script from the root of your project (where `docs/` lives):
 
 ```bash
-sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh)
 ```
 
 The script creates the `pandoc/` and `filters/` directories and downloads the
@@ -159,7 +159,7 @@ four files. It skips any file that already exists — pass `--force` to overwrit
 
 ```bash
 # Overwrite existing files
-sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh) --force
+bash <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/setup.sh) --force
 ```
 
 Edit `pandoc/metadata.yaml` to set your document title, author, and visual
@@ -445,7 +445,7 @@ directory.
 Run the install script to set up all dependencies at once:
 
 ```bash
-sh <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/jcarranz97/mdtopdf/main/install.sh)
 ```
 
 Supported platforms: **macOS** (requires Homebrew) and **Ubuntu/Debian**.
