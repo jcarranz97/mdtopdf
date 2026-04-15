@@ -1,9 +1,8 @@
 name: Test Docker images (standalone)
 
 # Runs after the build workflow pushes new images to GHCR, or on demand.
-# Each job creates only .md files, then uses the Docker image to produce a PDF.
-# No files from this repository are mounted — only the markdown input.
-# A non-empty PDF in the output directory is the pass condition.
+# Each job mounts the repo and runs the same make command a user would run,
+# then checks that a non-empty PDF was produced.
 
 on:
   workflow_run:
@@ -21,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Create test markdown file
@@ -42,17 +42,15 @@ jobs:
           More content to verify multi-section rendering.
           MD
 
-      - name: Generate PDF using /defaults/metadata.yaml from the image
+      - name: Generate PDF via make
         run: |
           docker run --rm \
             -v /tmp/pandoc-test:/docs \
             ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
-            pandoc /defaults/metadata.yaml /docs/doc.md \
-              --template eisvogel \
-              --pdf-engine xelatex \
-              --from markdown+smart \
-              --toc --number-sections \
-              -o /docs/output.pdf
+            DOCS_DIR=/docs \
+            DOC_ID=TEST \
+            DOC_MAJOR=1 \
+            DOC_MINOR=0
 
       - name: Verify PDF is non-empty
         run: |
@@ -65,54 +63,23 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: Create minimal Quarto project (no repo files)
-        run: |
-          mkdir -p /tmp/quarto-test
-          cat > /tmp/quarto-test/_quarto.yml << 'YAML'
-          project:
-            type: book
-          book:
-            title: "Standalone Test"
-            author: "CI"
-            chapters:
-              - index.md
-          format:
-            pdf:
-              documentclass: scrreprt
-              pdf-engine: xelatex
-              mainfont: "DejaVu Serif"
-              sansfont: "DejaVu Sans"
-              monofont: "DejaVu Sans Mono"
-          YAML
-          cat > /tmp/quarto-test/index.md << 'MD'
-          # Preface
+      - uses: actions/checkout@v6
 
-          Standalone test — only `.md` files and a minimal `_quarto.yml` are
-          provided. The image supplies Quarto, LaTeX, and all fonts.
-
-          ## Section One
-
-          Some content to exercise the full PDF pipeline.
-
-          ## Section Two
-
-          More content to verify multi-section rendering.
-          MD
-
-      - name: Generate PDF
+      - name: Generate PDF via make pdf
         run: |
           docker run --rm \
-            -v /tmp/quarto-test:/project \
-            -w /project \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/quarto \
             -e QUARTO_LATEX_AUTO_INSTALL=false \
             ghcr.io/jcarranz97/mdtopdf-quarto:latest \
-            quarto render --to pdf
+            make pdf
 
       - name: Verify PDF is non-empty
         run: |
-          pdf=$(find /tmp/quarto-test -name "*.pdf" | head -1)
+          pdf=$(find ${{ github.workspace }}/quarto/_build -name "*.pdf" | head -1)
           test -n "$pdf"
           test -s "$pdf"
           echo "Quarto PDF: $pdf ($(wc -c < "$pdf") bytes)"
@@ -123,62 +90,22 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: Create minimal Sphinx project (no repo files)
-        run: |
-          mkdir -p /tmp/sphinx-test
-          cat > /tmp/sphinx-test/conf.py << 'PY'
-          project = "Standalone Test"
-          author = "CI"
-          extensions = ["myst_parser"]
-          latex_engine = "xelatex"
-          latex_elements = {
-              "papersize": "a4paper",
-              "pointsize": "11pt",
-              "fontpkg": r"""
-          \usepackage{fontspec}
-          \setmainfont{DejaVu Serif}
-          \setsansfont{DejaVu Sans}
-          \setmonofont{DejaVu Sans Mono}[Scale=0.9]
-          """,
-          }
-          latex_documents = [
-              ("index", "test.tex", "Standalone Test", "CI", "manual"),
-          ]
-          PY
-          cat > /tmp/sphinx-test/index.md << 'MD'
-          # Standalone Test
+      - uses: actions/checkout@v6
 
-          ```{toctree}
-          :maxdepth: 2
-          content
-          ```
-          MD
-          cat > /tmp/sphinx-test/content.md << 'MD'
-          # Chapter One
-
-          Standalone test — only `.md` files and a minimal `conf.py` are
-          provided. The image supplies Sphinx, MyST-Parser, LaTeX, and all fonts.
-
-          ## Section
-
-          Some content to exercise the full PDF pipeline.
-          MD
-
-      - name: Generate PDF
+      - name: Generate PDF via make pdf
         run: |
           docker run --rm \
-            -v /tmp/sphinx-test:/project \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/sphinx \
             ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
-            bash -c "
-              sphinx-build -b latex /project /project/_build/latex -q &&
-              make -C /project/_build/latex all-pdf LATEXMKOPTS='-silent'
-            "
+            make pdf
 
       - name: Verify PDF is non-empty
         run: |
-          pdf=$(find /tmp/sphinx-test -name "*.pdf" | head -1)
+          pdf=$(find ${{ github.workspace }}/sphinx/_build/latex -name "*.pdf" | head -1)
           test -n "$pdf"
           test -s "$pdf"
           echo "Sphinx PDF: $pdf ($(wc -c < "$pdf") bytes)"

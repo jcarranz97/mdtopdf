@@ -74,72 +74,50 @@ your docs — no cloning, no copying files around.
 
 ---
 
-### Option 1 — Instant PDF (no config needed)
+### Option 1 — Instant PDF (via `make`)
+
+The image runs `make` by default. Mount your docs folder and pass the same
+`DOC_*` variables the Makefile already understands. The PDF is written back
+into the mounted folder automatically.
 
 ```bash
 docker run --rm \
   -v /path/to/your/docs:/docs \
   ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
-  pandoc /docs/*.md \
-    --template eisvogel \
-    --pdf-engine xelatex \
-    --from markdown+smart \
-    --toc --number-sections \
-    --metadata title="My Document" \
-    --metadata author="Your Name" \
-    -o /docs/output.pdf
+  DOCS_DIR=/docs \
+  DOC_ID=1234 \
+  DOC_MAJOR=1 \
+  DOC_MINOR=0 \
+  DOC_DATE="April 2026"
 ```
 
-Replace `/path/to/your/docs` with the folder containing your `.md` files.
-The PDF is written back into the same folder.
+Output: `/path/to/your/docs/output.pdf`
+
+All variables are optional — omit any you don't need and the Makefile
+defaults kick in (`DOC_ID=1234`, `DOC_MAJOR=1`, `DOC_MINOR=00`, etc.).
 
 ---
 
-### Option 2 — Use the default styling (metadata.yaml)
+### Option 2 — Customize the styling
 
-The image ships a ready-to-use `metadata.yaml` at `/defaults/metadata.yaml`
-with Eisvogel styling pre-configured (title page, fonts, colors, headers).
-Mount only your docs folder and reference it:
-
-```bash
-docker run --rm \
-  -v /path/to/your/docs:/docs \
-  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
-  pandoc /defaults/metadata.yaml /docs/*.md \
-    --template eisvogel \
-    --pdf-engine xelatex \
-    -o /docs/output.pdf
-```
-
----
-
-### Option 3 — Customize the styling
-
-Copy the default `metadata.yaml` out of the image, edit it, then mount it
-alongside your docs:
+Copy the default `metadata.yaml` out of the image, edit it to change fonts,
+colors, title page layout, or any other Eisvogel setting, then mount it
+alongside your docs so `make` picks it up instead of the baked-in one:
 
 ```bash
 # 1. Extract the default config
 docker run --rm ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
   cat /defaults/metadata.yaml > metadata.yaml
 
-# 2. Edit metadata.yaml — change title, author, fonts, colors, etc.
+# 2. Edit metadata.yaml — change fonts, colors, titlepage settings, etc.
 
-# 3. Build using your custom config
+# 3. Build — mount your custom metadata.yaml over the image's copy
 docker run --rm \
   -v /path/to/your/docs:/docs \
-  -v "$(pwd)/metadata.yaml":/metadata.yaml \
+  -v "$(pwd)/metadata.yaml":/pandoc/metadata.yaml \
   ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
-  pandoc /metadata.yaml /docs/*.md \
-    --template eisvogel \
-    --pdf-engine xelatex \
-    -o /docs/output.pdf
+  DOCS_DIR=/docs DOC_ID=1234 DOC_MAJOR=1 DOC_MINOR=0
 ```
-
-The image also ships the Lua filters at `/defaults/doc-type.lua` (conditional
-content) and `/defaults/chapter-break.lua` (chapter page breaks). Add them to
-the pandoc command with `--lua-filter=/defaults/doc-type.lua` if you use the
-`::: {.type1}` syntax in your docs.
 
 ---
 
@@ -1223,20 +1201,20 @@ tab.
 ### Rebuild and push an image
 
 ```bash
+# Run all three from the repo root — the Dockerfiles reference files across
+# subdirectories (e.g. filters/), so the build context must be the repo root.
+
 # Pandoc
-cd pandoc/
-docker build -t ghcr.io/jcarranz97/mdtopdf-pandoc:latest .
+docker build -f pandoc/Dockerfile -t ghcr.io/jcarranz97/mdtopdf-pandoc:latest .
 docker push ghcr.io/jcarranz97/mdtopdf-pandoc:latest
 
 # Quarto (pin a specific version with --build-arg)
-cd quarto/
-docker build --build-arg QUARTO_VERSION=1.6.42 \
+docker build -f quarto/Dockerfile --build-arg QUARTO_VERSION=1.6.42 \
   -t ghcr.io/jcarranz97/mdtopdf-quarto:latest .
 docker push ghcr.io/jcarranz97/mdtopdf-quarto:latest
 
 # Sphinx
-cd sphinx/
-docker build -t ghcr.io/jcarranz97/mdtopdf-sphinx:latest .
+docker build -f sphinx/Dockerfile -t ghcr.io/jcarranz97/mdtopdf-sphinx:latest .
 docker push ghcr.io/jcarranz97/mdtopdf-sphinx:latest
 ```
 

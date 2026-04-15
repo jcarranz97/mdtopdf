@@ -8,6 +8,12 @@ DOC_MINOR ?= 00
 DOC_DATE  ?= April 14, 2026
 DOC_TYPE  ?= type1
 
+# ─── Source directory (override to point at your own docs) ────────────────────
+#   make DOCS_DIR=/path/to/your/docs
+# When DOCS_DIR is changed from the default the PDF is written back into that
+# same folder so the output is easy to find without mounting a second volume.
+DOCS_DIR  ?= ../docs
+
 # Export so the Lua filter (doc-type.lua) can read DOC_TYPE via os.getenv()
 export DOC_TYPE
 
@@ -28,11 +34,16 @@ HEADER_FLAGS = \
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
-# Output file name
-OUTPUT  = output/platform-api-guide.pdf
+# Output file — when using a custom DOCS_DIR the PDF is written into that
+# folder; when using the default (repo's docs/) it goes to output/ as usual.
+ifeq ($(DOCS_DIR),../docs)
+OUTPUT  ?= output/platform-api-guide.pdf
+else
+OUTPUT  ?= $(DOCS_DIR)/output.pdf
+endif
 
-# Source files — metadata first, then chapters from the shared docs/ directory
-SOURCES = metadata.yaml $(wildcard ../docs/*.md)
+# Source files — metadata first, then chapters from DOCS_DIR
+SOURCES = metadata.yaml $(wildcard $(DOCS_DIR)/*.md)
 
 # Pandoc flags shared across all targets
 FLAGS = \
