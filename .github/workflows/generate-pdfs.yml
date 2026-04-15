@@ -9,26 +9,10 @@ jobs:
   pandoc-pdf:
     name: Pandoc PDF
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/mdtopdf-pandoc:latest
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Install LaTeX, fonts, and Pandoc
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            pandoc \
-            texlive-xetex \
-            texlive-fonts-recommended \
-            texlive-latex-extra \
-            texlive-plain-generic \
-            fonts-dejavu
-
-      - name: Install Eisvogel template
-        run: |
-          mkdir -p ~/.local/share/pandoc/templates
-          curl -sLO https://github.com/Wandmalfarbe/pandoc-latex-template/releases/latest/download/Eisvogel.tar.gz
-          tar -xzf Eisvogel.tar.gz --strip-components=1 --wildcards '*/eisvogel.latex'
-          mv eisvogel.latex ~/.local/share/pandoc/templates/
+      - uses: actions/checkout@v4
 
       - name: Build PDF
         working-directory: pandoc
@@ -44,21 +28,10 @@ jobs:
   quarto-pdf:
     name: Quarto PDF
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/mdtopdf-quarto:latest
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Set up Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      - name: Install LaTeX and fonts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            texlive-xetex \
-            texlive-fonts-recommended \
-            texlive-latex-extra \
-            texlive-plain-generic \
-            fonts-dejavu
+      - uses: actions/checkout@v4
 
       - name: Build PDF
         working-directory: quarto
@@ -76,28 +49,10 @@ jobs:
   sphinx-pdf:
     name: Sphinx PDF
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/mdtopdf-sphinx:latest
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install Python dependencies
-        working-directory: sphinx
-        run: pip install -r requirements.txt
-
-      - name: Install LaTeX and fonts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            texlive-xetex \
-            texlive-fonts-recommended \
-            texlive-latex-extra \
-            texlive-plain-generic \
-            fonts-dejavu \
-            latexmk
+      - uses: actions/checkout@v4
 
       - name: Build PDF
         working-directory: sphinx

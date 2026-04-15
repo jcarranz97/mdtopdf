@@ -1,0 +1,86 @@
+name: Build Docker images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - pandoc/Dockerfile
+      - quarto/Dockerfile
+      - sphinx/Dockerfile
+  workflow_dispatch:
+
+jobs:
+  # ── Pandoc + Eisvogel ────────────────────────────────────────────────────────
+  pandoc:
+    name: Build Pandoc image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: pandoc
+          file: pandoc/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/mdtopdf-pandoc:latest
+
+  # ── Quarto ───────────────────────────────────────────────────────────────────
+  quarto:
+    name: Build Quarto image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: quarto
+          file: quarto/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/mdtopdf-quarto:latest
+
+  # ── Sphinx + MyST ─────────────────────────────────────────────────────────────
+  sphinx:
+    name: Build Sphinx image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: sphinx
+          file: sphinx/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/mdtopdf-sphinx:latest

@@ -983,3 +983,128 @@ citizen compared to the HTML output.
 - **Font availability.** All three tools rely on `xelatex` to use system fonts
   by name. Run `fc-list : family | sort` to see what is available. The
   `DejaVu` family is a safe default that ships with most Linux distributions.
+
+---
+
+## Docker Image (Pandoc CI)
+
+A pre-built Docker image bundles all Pandoc CI dependencies — `pandoc`,
+`texlive-xetex`, `texlive-fonts-recommended`, `texlive-latex-extra`,
+`texlive-plain-generic`, `fonts-dejavu`, and the Eisvogel template — so the
+`pandoc-pdf` GitHub Actions job skips the ~5-minute install step on every run.
+
+### Registry
+
+The image is hosted on **GitHub Container Registry (GHCR)**, which is part of
+GitHub and free for public repositories:
+
+```
+ghcr.io/jcarranz97/mdtopdf-pandoc:latest
+```
+
+It is rebuilt automatically whenever `pandoc/Dockerfile` changes on `main`
+(via `.github/workflows/build-pandoc-image.yml`), and can also be triggered
+manually from the Actions tab.
+
+### Use the image locally
+
+```bash
+# Pull the image
+docker pull ghcr.io/jcarranz97/mdtopdf-pandoc:latest
+
+# Build a PDF from inside the container, mounting the repo root
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/pandoc \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  make
+```
+
+### Rebuild the image
+
+```bash
+cd pandoc/
+docker build -t ghcr.io/jcarranz97/mdtopdf-pandoc:latest .
+
+# Push  (requires: docker login ghcr.io -u jcarranz97 --password-stdin)
+docker push ghcr.io/jcarranz97/mdtopdf-pandoc:latest
+```
+
+---
+
+## Docker Image (Quarto CI)
+
+Pre-built image for the `quarto-pdf` CI job. Bundles `quarto` (pinned via
+`ARG QUARTO_VERSION`), `texlive-xetex`, `texlive-fonts-recommended`,
+`texlive-latex-extra`, `texlive-plain-generic`, and `fonts-dejavu`.
+
+### Registry
+
+```
+ghcr.io/jcarranz97/mdtopdf-quarto:latest
+```
+
+### Use the image locally
+
+```bash
+docker pull ghcr.io/jcarranz97/mdtopdf-quarto:latest
+
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/quarto \
+  -e QUARTO_LATEX_AUTO_INSTALL=false \
+  ghcr.io/jcarranz97/mdtopdf-quarto:latest \
+  make pdf
+```
+
+### Rebuild the image
+
+```bash
+cd quarto/
+docker build -t ghcr.io/jcarranz97/mdtopdf-quarto:latest .
+
+# Pin a specific Quarto version at build time
+docker build --build-arg QUARTO_VERSION=1.6.42 \
+  -t ghcr.io/jcarranz97/mdtopdf-quarto:latest .
+
+docker push ghcr.io/jcarranz97/mdtopdf-quarto:latest
+```
+
+---
+
+## Docker Image (Sphinx CI)
+
+Pre-built image for the `sphinx-pdf` CI job. Based on `python:3.12-slim`.
+Bundles `texlive-xetex`, `texlive-fonts-recommended`, `texlive-latex-extra`,
+`texlive-plain-generic`, `fonts-dejavu`, `latexmk`, and all Python
+dependencies from `sphinx/requirements.txt` (`sphinx`, `myst-parser`,
+`sphinx-rtd-theme`).
+
+### Registry
+
+```
+ghcr.io/jcarranz97/mdtopdf-sphinx:latest
+```
+
+### Use the image locally
+
+```bash
+docker pull ghcr.io/jcarranz97/mdtopdf-sphinx:latest
+
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/sphinx \
+  ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
+  make pdf
+```
+
+### Rebuild the image
+
+```bash
+cd sphinx/
+docker build -t ghcr.io/jcarranz97/mdtopdf-sphinx:latest .
+docker push ghcr.io/jcarranz97/mdtopdf-sphinx:latest
+```
+
+> **Note:** If `sphinx/requirements.txt` changes (new packages or version
+> bumps), rebuild and push the image so CI picks up the updated dependencies.
