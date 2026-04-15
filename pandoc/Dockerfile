@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       texlive-latex-extra \
       texlive-plain-generic \
       fonts-dejavu \
+      lmodern \
       make \
       curl \
       ca-certificates \

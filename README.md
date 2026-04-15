@@ -63,7 +63,95 @@ should be added to `.gitignore`.
 
 ---
 
-## Quick Start
+## Use This for Your Own Project
+
+Want to turn your own Markdown files into a professional PDF without installing
+LaTeX, Pandoc, or Quarto? Clone this repo, drop in your content, and run one
+Docker command.
+
+**1. Clone the repo**
+
+```bash
+git clone https://github.com/jcarranz97/mdtopdf.git
+cd mdtopdf
+```
+
+**2. Replace the sample content with your own files**
+
+Delete the existing chapters and add your own `.md` files to `docs/`. Keep
+the numeric prefix so they sort correctly:
+
+```bash
+rm docs/*.md
+cp ~/my-project/*.md docs/
+# Rename if needed: 01-intro.md, 02-setup.md, 03-usage.md, …
+```
+
+Each file should have a single `#` top-level heading — that becomes the
+chapter title.
+
+**3. Update the document metadata**
+
+Pick the tool you want to use and edit its config file:
+
+| Tool | Config file | What to change |
+|---|---|---|
+| Pandoc | `pandoc/metadata.yaml` | `title`, `author`, `date`, colors, fonts |
+| Quarto | `quarto/_quarto.yml` | `title`, `author`, `date` under `book:` |
+| Sphinx | `sphinx/conf.py` | `project`, `author`, `release` |
+
+**4. Build your PDF**
+
+Run the Docker command for your chosen tool from the repo root (no local
+install needed — everything is in the image):
+
+```bash
+# Pandoc (recommended for standalone PDFs)
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/pandoc \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  make
+
+# Quarto (if you also want HTML output)
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/quarto \
+  -e QUARTO_LATEX_AUTO_INSTALL=false \
+  ghcr.io/jcarranz97/mdtopdf-quarto:latest \
+  make pdf
+
+# Sphinx (if you want a full documentation site)
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/sphinx \
+  ghcr.io/jcarranz97/mdtopdf-sphinx:latest \
+  make pdf
+```
+
+**5. Find your PDF**
+
+| Tool | Output location |
+|---|---|
+| Pandoc | `pandoc/output/platform-api-guide.pdf` |
+| Quarto | `quarto/_build/` |
+| Sphinx | `sphinx/_build/latex/` |
+
+That's it. You can also pass [Document Identity Variables](#document-identity-variables)
+on the `make` command to set the document ID, revision, and date without
+touching any config file:
+
+```bash
+docker run --rm \
+  -v "$(pwd)":/workspace \
+  -w /workspace/pandoc \
+  ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
+  make DOC_ID=9001 DOC_MAJOR=2 DOC_MINOR=00 DOC_DATE="May 1, 2026"
+```
+
+---
+
+## Quick Start (run the sample docs)
 
 Each tool has a pre-built Docker image with all dependencies included —
 pandoc, LaTeX, fonts, and templates. No local installation required.
