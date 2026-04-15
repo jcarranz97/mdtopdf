@@ -15,7 +15,7 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository_owner }}/mdtopdf-pandoc:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build PDF
         working-directory: pandoc
@@ -37,7 +37,7 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository_owner }}/mdtopdf-quarto:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build PDF
         working-directory: quarto
@@ -61,7 +61,7 @@ jobs:
     container:
       image: ghcr.io/${{ github.repository_owner }}/mdtopdf-sphinx:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build PDF
         working-directory: sphinx
