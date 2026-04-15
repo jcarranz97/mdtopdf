@@ -62,6 +62,8 @@ jobs:
 
       - name: Build PDF
         working-directory: quarto
+        env:
+          QUARTO_LATEX_AUTO_INSTALL: "false"
         run: make pdf
 
       - name: Upload PDF

@@ -26,6 +26,7 @@ book:
 # ─── PDF output (via LaTeX) ────────────────────────────────────────────────────
 format:
   pdf:
+    pdf-engine: xelatex           # consistent with Pandoc and Sphinx; required for fontspec/DejaVu
     documentclass: scrreprt       # KOMA-Script report — cleaner than default
     classoption: [oneside]
     papersize: a4
