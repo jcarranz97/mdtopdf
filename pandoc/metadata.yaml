@@ -1,0 +1,31 @@
+---
+title: "Platform API — Technical Guide"
+author:
+  - "Alice Nguyen"
+  - "Bob Martínez"
+  - "Carol Smith"
+date: "2026-04-13"
+subject: "Engineering Documentation"
+keywords: [api, architecture, deployment, platform]
+lang: "en"
+toc: true
+toc-own-page: true
+toc-depth: 3
+titlepage: true
+titlepage-color: "1E2A38"
+titlepage-text-color: "FFFFFF"
+titlepage-rule-color: "4A90D9"
+titlepage-rule-height: 4
+fontsize: 11pt
+mainfont: "DejaVu Serif"
+sansfont: "DejaVu Sans"
+monofont: "DejaVu Sans Mono"
+geometry: "margin=2.5cm"
+linkcolor: "4A90D9"
+urlcolor: "4A90D9"
+numbersections: true
+# ─── Headers and footers ──────────────────────────────────────────────────────
+# These are injected at build time via --metadata flags in the Makefile so that
+# DOC_ID, DOC_MAJOR, DOC_MINOR, and DOC_DATE can be set from the CLI:
+#   make DOC_ID=5678 DOC_MAJOR=2 DOC_MINOR=01
+---
