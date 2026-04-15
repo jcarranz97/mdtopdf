@@ -92,6 +92,15 @@ extract the default `metadata.yaml`, edit it, and mount it back into the
 container. Like Option 1, this works for existing projects and new ones with no
 local installation required.
 
+**Recommended project layout:**
+
+```text
+your-project/
+├── docs/           ← your Markdown files
+│   └── *.md
+└── metadata.yaml   ← extracted and edited config (mounted into the container)
+```
+
 ```bash
 # 1. Extract the default config
 docker run --rm ghcr.io/jcarranz97/mdtopdf-pandoc:latest \
