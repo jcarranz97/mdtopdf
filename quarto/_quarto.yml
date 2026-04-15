@@ -37,8 +37,8 @@ format:
     sansfont: "DejaVu Sans"
     monofont: "DejaVu Sans Mono"
     colorlinks: true
-    linkcolor: "336699"
-    urlcolor: "336699"
+    linkcolor: linkblue
+    urlcolor: linkblue
     number-sections: true
     toc: true
     toc-depth: 3

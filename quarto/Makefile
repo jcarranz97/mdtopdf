@@ -28,6 +28,7 @@ _header.tex: Makefile
 	@printf '%s\n' '\usepackage{longtable}'                                         >> $@
 	@printf '%s\n' '\usepackage{fancyhdr}'                                          >> $@
 	@printf '%s\n' '\usepackage{xcolor}'                                            >> $@
+	@printf '%s\n' '\definecolor{linkblue}{HTML}{336699}'                          >> $@
 	@printf '%s\n' '\pagestyle{fancy}'                                              >> $@
 	@printf '%s\n' '\fancyhf{}'                                                     >> $@
 	@printf '%s\n' '\fancyhead[L]{\small $(HEADER_LEFT)}'                          >> $@
