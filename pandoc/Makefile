@@ -30,7 +30,8 @@ HEADER_FLAGS = \
 	--variable=header-right:"$(HEADER_RIGHT)" \
 	--variable=footer-left:"\\mbox{}" \
 	--variable=footer-center:"\\textcolor[HTML]{4A90D9}{$(DOC_TYPE)}" \
-	--variable=footer-right:"\\thepage"
+	--variable=footer-right:"\\thepage" \
+	--metadata=subtitle:"Rev $(DOC_MAJOR).$(DOC_MINOR)"
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 

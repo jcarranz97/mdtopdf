@@ -11,7 +11,7 @@ DOC_TYPE  ?= type1
 # Export so the Lua filter (doc-type.lua) can read DOC_TYPE via os.getenv()
 export DOC_TYPE
 
-HEADER_LEFT  = $(DOC_ID) Rev $(DOC_MAJOR).$(DOC_MINOR) - $(DOC_DATE)
+HEADER_LEFT  = Rev $(DOC_MAJOR).$(DOC_MINOR) - $(DOC_DATE)
 HEADER_RIGHT = Platform API - Technical Guide
 
 # ─── Configuration ────────────────────────────────────────────────────────────
@@ -29,6 +29,7 @@ _header.tex: Makefile
 	@printf '%s\n' '\usepackage{fancyhdr}'                                          >> $@
 	@printf '%s\n' '\usepackage{xcolor}'                                            >> $@
 	@printf '%s\n' '\definecolor{linkblue}{HTML}{336699}'                          >> $@
+	@printf '%s\n' '\subtitle{Rev $(DOC_MAJOR).$(DOC_MINOR)}'                      >> $@
 	@printf '%s\n' '\pagestyle{fancy}'                                              >> $@
 	@printf '%s\n' '\fancyhf{}'                                                     >> $@
 	@printf '%s\n' '\fancyhead[L]{\small $(HEADER_LEFT)}'                          >> $@

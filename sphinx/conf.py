@@ -12,7 +12,7 @@ _doc_major = os.environ.get("DOC_MAJOR", "1")
 _doc_minor = os.environ.get("DOC_MINOR", "00")
 _doc_date  = os.environ.get("DOC_DATE",  "April 14, 2026")
 
-_header_left  = f"{_doc_id} Rev {_doc_major}.{_doc_minor} - {_doc_date}"
+_header_left  = f"Rev {_doc_major}.{_doc_minor} - {_doc_date}"
 _header_right = "Platform API -- Technical Guide"   # -- becomes em-dash in LaTeX
 _doc_type     = os.environ.get("DOC_TYPE", "type1")
 
@@ -20,7 +20,7 @@ _doc_type     = os.environ.get("DOC_TYPE", "type1")
 
 project = "Platform API — Technical Guide"
 author = "Alice Nguyen, Bob Martínez, Carol Smith"
-release = "1.0"
+release = f"Rev {_doc_major}.{_doc_minor}"
 language = "en"
 
 # ─── Extensions ───────────────────────────────────────────────────────────────
